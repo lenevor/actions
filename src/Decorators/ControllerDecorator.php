@@ -168,7 +168,7 @@ class ControllerDecorator
      */
     protected function refreshRequest(): ActionRequest
     {
-        app()->forgetInstance(ActionRequest::class);
+        app()->eraseInstance(ActionRequest::class);
 
         /** @var ActionRequest $request */
         $request = app(ActionRequest::class);
