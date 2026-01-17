@@ -20,16 +20,20 @@
 
 namespace Lenevor\Actions;
 
-use Syscodes\Components\Routing\Router;
 use Lenevor\Actions\Concerns\ForCommand;
 use Lenevor\Actions\Concerns\ForController;
 use Lenevor\Actions\Patterns\DesignPattern;
+use Syscodes\Components\Core\Application;
 use Syscodes\Components\Console\Application as Prime;
+use Syscodes\Components\Routing\Router;
 
 class ActionManager
 {
     /** @var DesignPattern[] */
     protected array $designPatterns = [];
+
+    /** @var bool[] */
+    protected array $extended = [];
 
     protected int $backtraceLimit = 10;
 
@@ -80,9 +84,44 @@ class ActionManager
         return array_filter($this->getDesignPatterns(), $filter);
     }
 
+    public function extend(Application $app, string $abstract): void
+    {
+        if ($this->isExtending($abstract)) {
+            return;
+        }
+
+        if ( ! $this->shouldExtend($abstract)) {
+            return;
+        }
+
+        $app->extend($abstract, function ($instance) {
+            return $this->identifyAndDecorate($instance);
+        });
+
+        $this->extended[$abstract] = true;
+    }
+
     public function isExtending(string $abstract): bool
     {
         return isset($this->extended[$abstract]);
+    }
+
+    public function shouldExtend(string $abstract): bool
+    {
+        $usedTraits = class_recursive($abstract);
+
+        return ! empty($this->getDesignPatternsMatching($usedTraits));
+    }
+
+    public function identifyAndDecorate($instance)
+    {
+        $usedTraits = class_recursive($instance);
+
+        if ( ! $designPattern = $this->identifyFromBacktrace($usedTraits, $frame)) {
+            return $instance;
+        }
+
+        return $designPattern->decorate($instance, $frame);
     }
 
     public function identifyFromBacktrace($usedTraits, ?Backtrace &$frame = null): ?DesignPattern
