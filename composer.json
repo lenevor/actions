@@ -24,13 +24,7 @@
 		}
 	],
 	"require": {
-		"php": "^8.2",
-        "syscodes/collections": "^0.8.16",
-        "syscodes/console": "^0.8.16",
-		"syscodes/contracts": "^0.8.16",
-        "syscodes/events": "^0.8.16",
-		"syscodes/routing": "^0.8.16",
-		"syscodes/support": "^0.8.16"
+		"php": "^8.2"
 	},
 	"autoload": {
 		"psr-4": {
