@@ -1,0 +1,52 @@
+{
+	"name": "lenevor/actions",
+	"description": "Lenevor components that take care of one specific task.",
+	"keywords": [
+        "lenevor",
+        "component",
+        "action",
+        "controller",
+        "object",
+        "command",
+        "listener"
+    ],
+	"license": "BSD-3-Clause",
+	"homepage": "https://github.com/lenevor/actions",
+	"support": {
+		"issues": "https://github.com/lenevor/actions/issues",
+                "source": "https://github.com/lenevor/actions"
+	},
+	"authors": [
+		{
+			"name": "Alexander Campo",
+			"email": "jalexcam@gmail.com",
+            "role": "Developer"
+		}
+	],
+	"require": {
+		"php": "^8.2",
+        "syscodes/collections": "^0.8.16",
+        "syscodes/console": "^0.8.16",
+		"syscodes/contracts": "^0.8.16",
+        "syscodes/events": "^0.8.16",
+		"syscodes/routing": "^0.8.16",
+		"syscodes/support": "^0.8.16"
+	},
+	"autoload": {
+		"psr-4": {
+			"Lenevor\\Actions\\": "src"
+		}
+	},
+    "extra": {
+        "lenevor": {
+            "providers": [
+                "Lenevor\\Actions\\ActionServiceProvider"
+            ],
+            "aliases": {
+                "Action": "Lenevor\\Actions\\Facades\\Actions"
+            }
+        }
+    },
+	"minimum-stability": "dev",
+	"prefer-stable": true
+}
