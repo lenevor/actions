@@ -20,8 +20,6 @@
 
 namespace Lenevor\Actions;
 
-use Lenevor\Actions\Concerns\ForCommand;
-use Lenevor\Actions\Concerns\ForController;
 use Lenevor\Actions\Patterns\DesignPattern;
 use Syscodes\Components\Core\Application;
 use Syscodes\Components\Console\Application as Prime;
@@ -29,12 +27,25 @@ use Syscodes\Components\Routing\Router;
 
 class ActionManager
 {
-    /** @var DesignPattern[] */
+    /**
+     * The design patterns.
+     * 
+     * @var DesignPattern[]
+     */
     protected array $designPatterns = [];
 
-    /** @var bool[] */
+    /**
+     * Extender an id type in the action.
+     * 
+     * @var bool[]
+     */
     protected array $extended = [];
 
+    /**
+     * Get the backtrace limit.
+     * 
+     * @var bool
+     */
     protected int $backtraceLimit = 10;
 
     /**
@@ -49,32 +60,65 @@ class ActionManager
         $this->setDesignPatterns($designPatterns);
     }
 
-    public function setBacktraceLimit(int $backtraceLimit): ActionManager
+    /**
+     * Sets the backtrace limit.
+     * 
+     * @param  int  $backtraceLimit
+     * 
+     * @return static
+     */
+    public function setBacktraceLimit(int $backtraceLimit): static
     {
         $this->backtraceLimit = $backtraceLimit;
 
         return $this;
     }
 
-    public function setDesignPatterns(array $designPatterns): ActionManager
+    /**
+     * Sets the design patterns.
+     * 
+     * @param  array  $designPatterns
+     * 
+     * @return static
+     */
+    public function setDesignPatterns(array $designPatterns): static
     {
         $this->designPatterns = $designPatterns;
 
         return $this;
     }
 
+    /**
+     * Gets the design patterns.
+     * 
+     * @return array
+     */
     public function getDesignPatterns(): array
     {
         return $this->designPatterns;
     }
 
-    public function registerDesignPattern(DesignPattern $designPattern): ActionManager
+    /**
+     * Register the design pattern.
+     * 
+     * @param  \Lenevor\Actions\Patterns\DesignPattern  $designPattern
+     * 
+     * @return static
+     */
+    public function registerDesignPattern(DesignPattern $designPattern): static
     {
         $this->designPatterns[] = $designPattern;
         
         return $this;
     }
 
+    /**
+     * Get the design patterns matching.
+     * 
+     * @param  array  $usedTraits
+     * 
+     * @return array
+     */
     public function getDesignPatternsMatching(array $usedTraits): array
     {
         $filter = function (DesignPattern $designPattern) use ($usedTraits) {
@@ -84,35 +128,64 @@ class ActionManager
         return array_filter($this->getDesignPatterns(), $filter);
     }
 
-    public function extend(Application $app, string $abstract): void
+    /**
+     * Extender an id type in the actions.
+     * 
+     * @param  \Syscodes\Components\Core\Application  $app
+     * @param  string  $id
+     * 
+     * @return void
+     */
+    public function extend(Application $app, string $id): void
     {
-        if ($this->isExtending($abstract)) {
+        if ($this->isExtending($id)) {
             return;
         }
 
-        if ( ! $this->shouldExtend($abstract)) {
+        if ( ! $this->shouldExtend($id)) {
             return;
         }
 
-        $app->extend($abstract, function ($instance) {
+        $app->extend($id, function ($instance) {
             return $this->identifyAndDecorate($instance);
         });
 
-        $this->extended[$abstract] = true;
+        $this->extended[$id] = true;
     }
 
-    public function isExtending(string $abstract): bool
+    /**
+     * Check if is extending?
+     * 
+     * @param  string  $id
+     * 
+     * @return bool
+     */
+    public function isExtending(string $id): bool
     {
-        return isset($this->extended[$abstract]);
+        return isset($this->extended[$id]);
     }
 
-    public function shouldExtend(string $abstract): bool
+    /**
+     * Check if is should extend?
+     * 
+     * @param  string  $id
+     * 
+     * @return bool
+     */
+    public function shouldExtend(string $id): bool
     {
-        $usedTraits = class_recursive($abstract);
+        $usedTraits = class_recursive($id);
 
         return ! empty($this->getDesignPatternsMatching($usedTraits));
     }
 
+    /**
+     * The identify of backtrace frame and decorate.
+     * 
+     * @param  mixed  $instance
+     * 
+     * @return mixed
+     */
     public function identifyAndDecorate($instance)
     {
         $usedTraits = class_recursive($instance);
@@ -124,11 +197,19 @@ class ActionManager
         return $designPattern->decorate($instance, $frame);
     }
 
+    /**
+     * The identify of backtrace frame and design pattern.
+     * 
+     * @param  array  $usedTraits
+     * @param  \Lenevor\Actions\Backtrtace|null  $frame
+     * 
+     * @return \Lenevor\Actions\Patterns\DesignPattern
+     */
     public function identifyFromBacktrace($usedTraits, ?Backtrace &$frame = null): ?DesignPattern
     {
         $designPatterns = $this->getDesignPatternsMatching($usedTraits);
-        $backtraceOptions = DEBUG_BACKTRACE_PROVIDE_OBJECT
-            | DEBUG_BACKTRACE_IGNORE_ARGS;
+
+        $backtraceOptions = DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS;
         
         $ownNumberOfFrames = 2;
 
@@ -151,11 +232,25 @@ class ActionManager
         return null;
     }
 
+    /**
+     * The register routes for action.
+     * 
+     * @param  string  $className
+     * 
+     * @return void
+     */
     public function registerRoutesAction(string $className): void
     {
         $className::routes(app(Router::class));
     }
 
+    /**
+     * The register commands for action.
+     * 
+     * @param  string  $className
+     * 
+     * @return void
+     */
     public function registerCommandsAction(string $className): void
     {
         Prime::starting(function ($prime) use ($className) {
