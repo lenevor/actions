@@ -1,0 +1,7 @@
+/.idea
+build
+composer.lock
+composer.pchar
+coverage
+docs
+vendor
